@@ -1,2 +1,40 @@
 # Guide-for-custom-build-including-SWIG-in-Visual-Studio-C-DLL-project
 Guide for custom build including SWIG in Visual Studio C++ DLL project
+
+- Add New Project. Windows Desktop Wizard. DLL. Empty Project.
+-- In the Project Properties
+--- In General
+---- change Target Extension from ".dll" to ".pyd"
+---- change Target Name from "$(ProjectName)" to $_(ProjectName)
+--- In C/C++ and Linker, add appropriate Python header include and lib paths.
+- In the Project, in "Source Files", right click, add new item, give it name "ProjectName.i" which as the minimal example contents as follows:
+
+%module ProjectName
+%include "std_string.i"
+
+%{
+#include "Header.h"
+%}
+
+%include "Header.h"
+
+- Right click that "ProjectName.i" file, select "custom build tool" in properties. Then in the command line:
+
+"D:\Progs\swigwin-4.0.0\swig.exe" -c++ -python -builtin -doxygen -castmode -O -outdir "$(Outdir.TrimEnd('\'))" %(identity)
+
+In the outputs: 
+
+%(Filename)_wrap.cxx;$(Outdir)%(Filename).py;%(Outputs)
+
+- Right click "ProjectName.i" file, select "Compile"
+- Click "Source Files", "Add Existing Item", and select "ProjectName.cxx".
+- Now can build the project. Even if I change the "ProjectName.i", I don't have do anything. Just build the project. Everything will be generated automatically. Note that rather than "build", use "rebuild". The interface file ("ProjectName.i") includes other header files, etc. So even if interface file does not change, the header files it is including change mean that the custom build step needs to call swig. But just by using "build", visual studio isn't aware that it has to rerun the custom build step because it does not understand the interface file. Thus, I need to use "rebuild" (rather than "build") which will call the custom build step.
+
+
+<https://kyaw.xyz/2020/05/16/guide-for-custom-build-including-swig-in-visual-studio-c-dll-project/>
+
+Copyright (C) 2020 Kyaw Kyaw Htike @ Ali Abdul Ghafur. All rights reserved.
+
+Dr. Kyaw Kyaw Htike @ Ali Abdul Ghafur
+
+<https://kyaw.xyz>
